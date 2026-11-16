@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1e40af">
+<meta name="description" content="Outils PDF qui fonctionnent hors connexion : images, texte, fusion, extraction.">
+<title>PDF Facile</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+  :root {
+    --bg: #f4f6fb; --surface: #ffffff; --text: #0f172a; --muted: #64748b;
+    --primary: #1e40af; --on-primary: #ffffff; --accent: #f97316;
+    --border: #dbe2ee; --ok: #15803d; --bad: #b91c1c; --ok-bg: #e8f7ee;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0b1220; --surface: #141c2f; --text: #e8edf7; --muted: #93a1ba;
+      --primary: #3b6df0; --border: #26324d; --ok: #4ade80; --bad: #f87171; --ok-bg: #12301f;
+    }
+  }
+  [hidden] { display: none !important; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html { background: var(--bg); }
+  body {
+    margin: 0; color: var(--text); background: var(--bg);
+    font: 16px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+  header { padding: 22px 16px 8px; max-width: 640px; margin: 0 auto; }
+  h1 { margin: 0; font-size: 28px; letter-spacing: -.3px; }
+  h1::after { content: ""; display: block; width: 44px; height: 4px; border-radius: 4px; background: var(--accent); margin-top: 6px; }
+  .sub { margin: 8px 0 0; color: var(--muted); font-size: 14px; }
+  #offline { display: inline-block; margin-top: 8px; font-size: 13px; color: var(--ok); background: var(--ok-bg); padding: 3px 10px; border-radius: 99px; }
+  main, footer { max-width: 640px; margin: 0 auto; padding: 8px 16px 24px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 8px; }
+  .card {
+    display: flex; flex-direction: column; gap: 4px; align-items: flex-start; text-align: left;
+    background: var(--surface); color: var(--text); border: 1px solid var(--border); border-radius: 16px;
+    padding: 16px 14px; min-height: 132px; font: inherit; cursor: pointer;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, .06);
+  }
+  .card:active { transform: scale(.98); }
+  .card .ic { font-size: 30px; line-height: 1; margin-bottom: 6px; }
+  .card small { color: var(--muted); font-size: 13px; }
+  h2 { margin: 8px 0 4px; font-size: 22px; }
+  .hint { color: var(--muted); margin: 4px 0 14px; font-size: 14px; }
+  .back { background: none; border: 0; color: var(--primary); font: inherit; font-weight: 600; padding: 10px 0; cursor: pointer; }
+  .pick {
+    display: flex; align-items: center; justify-content: center; min-height: 56px; border-radius: 14px;
+    border: 2px dashed var(--primary); color: var(--primary); font-weight: 700; cursor: pointer; background: var(--surface);
+  }
+  .files { list-style: none; padding: 0; margin: 12px 0; display: grid; gap: 8px; }
+  .files li {
+    display: flex; align-items: center; gap: 8px; background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 8px 8px 8px 12px;
+  }
+  .fname { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .files small { color: var(--muted); }
+  .mini {
+    width: 40px; height: 40px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg);
+    color: var(--text); font-size: 16px; cursor: pointer; flex: none;
+  }
+  label { display: block; margin: 14px 0 0; font-weight: 600; font-size: 14px; }
+  input[type=text], select, textarea {
+    display: block; width: 100%; margin-top: 6px; padding: 12px; font: inherit; color: var(--text);
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+  }
+  textarea { resize: vertical; }
+  button.primary, #share, #install {
+    min-height: 52px; border-radius: 14px; border: 0; font: inherit; font-weight: 700; cursor: pointer; padding: 0 18px;
+  }
+  button.primary { background: var(--primary); color: var(--on-primary); width: 100%; margin-top: 18px; }
+  button.primary:disabled { opacity: .45; cursor: not-allowed; }
+  #status { margin-top: 12px; min-height: 22px; color: var(--muted); }
+  #status.bad { color: var(--bad); font-weight: 600; }
+  .ok { margin-top: 16px; padding: 12px 14px; background: var(--ok-bg); color: var(--ok); border-radius: 12px; font-weight: 700; }
+  .row { display: flex; gap: 10px; }
+  .row .primary { margin-top: 12px; flex: 1; }
+  #share { margin-top: 12px; background: var(--surface); color: var(--text); border: 1px solid var(--border); }
+  #install { width: 100%; background: var(--accent); color: #fff; margin-bottom: 10px; }
+  #tip { color: var(--muted); font-size: 13px; text-align: center; margin: 8px 0 0; }
+  details { margin-top: 14px; }
+  summary { cursor: pointer; font-weight: 600; color: var(--primary); padding: 8px 0; }
+  #cancel {
+    width: 100%; margin-top: 10px; min-height: 48px; border-radius: 14px; border: 1px solid var(--border);
+    background: var(--surface); color: var(--text); font: inherit; font-weight: 600; cursor: pointer;
+  }
+</style>
+</head>
+<body>
+  <header>
+    <h1>PDF Facile</h1>
+    <p class="sub">Tes fichiers ne quittent jamais ton téléphone.</p>
+    <span id="offline" hidden></span>
+  </header>
+
+  <main>
+    <section id="home"><div class="grid" id="grid"></div></section>
+    <section id="panel" hidden></section>
+  </main>
+
+  <footer>
+    <button id="install" hidden>📲 Installer l’application</button>
+    <p id="tip">Pour l’installer : menu ⋮ du navigateur → « Installer l’application » ou « Ajouter à l’écran d’accueil ».</p>
+  </footer>
+
+  <script src="pdf-lib.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
